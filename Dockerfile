@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.4-fpm
 
 # Install dependencies and extensions needed for Laravel
 RUN apt-get update && apt-get install -y \
