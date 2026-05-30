@@ -4,25 +4,28 @@ FROM php:8.4-apache
 RUN apt-get update && apt-get install -y \
     libpng-dev libjpeg-dev libfreetype6-dev zip unzip git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql
+    && docker-php-ext-install gd pdo pdo_mysql \
+    && rm -rf /var/lib/apt/lists/*
 
-# Enable Apache Mod Rewrite for Laravel public index parsing
-RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
-RUN a2enmod rewrite
-
-# --- FIX: Disable conflicting MPMs and enable prefork ---
+# FIX 1: Disable conflicting MPMs, use prefork (mod_php is not thread-safe)
 RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
-# --------------------------------------------------------
+
+# Point Apache to Laravel's public directory
+RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
+
+# FIX 2: Enable rewrite AND allow .htaccess overrides (required for Laravel routing)
+RUN a2enmod rewrite \
+    && sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
 WORKDIR /var/www/html
 COPY . .
 
-# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
-# Set application permissions for storage directories
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Bind to dynamic Port Environment variable assigned by Render/Railway
-CMD sh -c "sed -i 's/Listen 80/Listen '${PORT:-80}'/g' /etc/apache2/ports.conf && apache2-foreground"
+# FIX 3: Update BOTH ports.conf AND the VirtualHost port, not just one
+CMD sh -c "sed -i 's/Listen 80/Listen '${PORT:-80}'/g' /etc/apache2/ports.conf \
+    && sed -i 's/<VirtualHost \*:80>/<VirtualHost *:'${PORT:-80}'>/g' /etc/apache2/sites-available/000-default.conf \
+    && apache2-foreground"
