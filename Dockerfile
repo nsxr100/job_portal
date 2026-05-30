@@ -62,4 +62,10 @@ RUN chown -R www-data:www-data /var/www/html/storage \
     /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage
 
-CMD sed -i "s/Listen 80/Listen $PORT/g" /etc/apache2/ports.conf && sed -i "s/<VirtualHost \*:80>/<VirtualHost \*:$PORT>/g" /etc/apache2/sites-available/000-default.conf && a2dismod mpm_event mpm_worker || true && a2enmod mpm_prefork && php artisan migrate --force && apache2-foreground
+CMD sed -i "s/Listen 80/Listen $PORT/g" /etc/apache2/ports.conf && \
+    sed -i "s/<VirtualHost \*:80>/<VirtualHost \*:$PORT>/g" /etc/apache2/sites-available/000-default.conf && \
+    a2dismod mpm_event mpm_worker || true && \
+    a2enmod mpm_prefork && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+    apache2-foreground
