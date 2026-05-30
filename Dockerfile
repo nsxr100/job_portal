@@ -1,29 +1,69 @@
-FROM php:8.4-apache
+FROM php:8.4-fpm-alpine
 
-# Install dependencies and extensions needed for Laravel
-RUN apt-get update && apt-get install -y \
-    libpng-dev libjpeg-dev libfreetype6-dev zip unzip git \
+# Install Nginx, Supervisor, and PHP extensions
+RUN apk add --no-cache \
+    nginx supervisor \
+    freetype-dev libjpeg-turbo-dev libpng-dev \
+    zip unzip git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql
+    && docker-php-ext-install gd pdo pdo_mysql \
+    && rm -rf /var/cache/apk/*
 
-# Enable Apache Mod Rewrite for Laravel public index parsing
-RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
-RUN a2enmod rewrite
+# Nginx config — APP_PORT is swapped for Railway's $PORT at startup
+RUN mkdir -p /run/nginx && cat > /etc/nginx/http.d/default.conf << 'EOF'
+server {
+    listen APP_PORT;
+    root /var/www/html/public;
+    index index.php;
+    client_max_body_size 50M;
 
-# --- BULLETPROOF FIX: Force delete extra MPMs and enable prefork ---
-RUN rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf \
-    && a2enmod mpm_prefork
-# -------------------------------------------------------------------
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
+EOF
+
+# Supervisord — keeps both nginx and php-fpm alive in one container
+RUN cat > /etc/supervisord.conf << 'EOF'
+[supervisord]
+nodaemon=true
+logfile=/dev/null
+
+[program:php-fpm]
+command=php-fpm -F
+autostart=true
+autorestart=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:nginx]
+command=nginx -g "daemon off;"
+autostart=true
+autorestart=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+EOF
 
 WORKDIR /var/www/html
 COPY . .
 
-# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
-# Set application permissions for storage directories
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage \
+    /var/www/html/bootstrap/cache
 
-# Bind to dynamic Port Environment variable assigned by Render/Railway
-CMD sh -c "sed -i 's/Listen 80/Listen '${PORT:-80}'/g' /etc/apache2/ports.conf && apache2-foreground"
+# Inject Railway's PORT, then start both services via supervisord
+CMD sh -c "sed -i 's/APP_PORT/${PORT:-80}/' /etc/nginx/http.d/default.conf \
+    && supervisord -c /etc/supervisord.conf"
