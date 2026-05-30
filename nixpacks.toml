@@ -1,2 +1,5 @@
 [phases.setup]
 nixPkgs = ["php84"]
+
+[phases.build]
+cmds = ["composer install --no-dev --optimize-autoloader --ignore-platform-reqs"]
