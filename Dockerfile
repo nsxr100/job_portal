@@ -1,6 +1,5 @@
 FROM php:8.4-fpm-alpine
 
-# Install Nginx, Supervisor, and PHP extensions
 RUN apk add --no-cache \
     nginx supervisor \
     freetype-dev libjpeg-turbo-dev libpng-dev \
@@ -9,7 +8,6 @@ RUN apk add --no-cache \
     && docker-php-ext-install gd pdo pdo_mysql \
     && rm -rf /var/cache/apk/*
 
-# Nginx config — APP_PORT is swapped for Railway's $PORT at startup
 RUN mkdir -p /run/nginx && cat > /etc/nginx/http.d/default.conf << 'EOF'
 server {
     listen APP_PORT;
@@ -34,7 +32,6 @@ server {
 }
 EOF
 
-# Supervisord — keeps both nginx and php-fpm alive in one container
 RUN cat > /etc/supervisord.conf << 'EOF'
 [supervisord]
 nodaemon=true
@@ -62,8 +59,10 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
 RUN chown -R www-data:www-data /var/www/html/storage \
-    /var/www/html/bootstrap/cache
+    /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage
 
-# Inject Railway's PORT, then start both services via supervisord
-CMD sh -c "sed -i 's/APP_PORT/${PORT:-80}/' /etc/nginx/http.d/default.conf \
+CMD sh -c "sed -i 's/APP_PORT/$PORT/' /etc/nginx/http.d/default.conf \
+    && php artisan config:cache \
+    && php artisan route:cache \
     && supervisord -c /etc/supervisord.conf"
