@@ -1,29 +1,62 @@
 FROM php:8.4-fpm-alpine
 
 RUN apk add --no-cache \
-    nginx supervisor \
-    freetype-dev libjpeg-turbo-dev libpng-dev \
-    zip unzip git \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql \
-    && rm -rf /var/cache/apk/*
+    nginx \
+    supervisor \
+    curl \
+    git \
+    unzip \
+    zip \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    mysql-client
 
-RUN mkdir -p /run/nginx && cat > /etc/nginx/http.d/default.conf << 'EOF'
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+RUN docker-php-ext-install \
+    pdo \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+COPY . .
+
+RUN composer install --no-dev --optimize-autoloader
+
+RUN mkdir -p storage/framework/{sessions,views,cache} \
+    && chmod -R 775 storage bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+RUN rm -f /etc/nginx/http.d/default.conf
+
+RUN cat > /etc/nginx/http.d/default.conf <<EOF
 server {
-    listen APP_PORT;
+    listen 8080;
+    server_name _;
+
     root /var/www/html/public;
-    index index.php;
+    index index.php index.html;
+
     client_max_body_size 50M;
 
     location / {
-        try_files $uri $uri/ /index.php?$query_string;
+        try_files \$uri \$uri/ /index.php?\$query_string;
     }
 
     location ~ \.php$ {
+        include fastcgi_params;
         fastcgi_pass 127.0.0.1:9000;
         fastcgi_index index.php;
-        include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
     }
 
     location ~ /\.ht {
@@ -32,46 +65,21 @@ server {
 }
 EOF
 
-RUN cat > /etc/supervisord.conf << 'EOF'
+RUN cat > /etc/supervisord.conf <<EOF
 [supervisord]
 nodaemon=true
-logfile=/dev/null
 
 [program:php-fpm]
 command=php-fpm -F
 autostart=true
 autorestart=true
-stdout_logfile=/dev/stdout
-stdout_logfile_maxbytes=0
 
 [program:nginx]
 command=nginx -g "daemon off;"
 autostart=true
 autorestart=true
-stdout_logfile=/dev/stdout
-stdout_logfile_maxbytes=0
 EOF
 
-WORKDIR /var/www/html
-COPY . .
-
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer install --no-dev --optimize-autoloader
-
-RUN php artisan config:clear || true
-RUN php artisan cache:clear || true
-RUN php artisan view:clear || true
-
-RUN chown -R www-data:www-data /var/www/html/storage \
-    /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage
 EXPOSE 8080
 
-CMD sh -c ' \
-sed -i "s/APP_PORT/${PORT}/g" /etc/nginx/http.d/default.conf && \
-chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
-php artisan optimize:clear || true; \
-php artisan migrate --force || true; \
-supervisord -c /etc/supervisord.conf \
-'
+CMD sh -c "php artisan optimize:clear || true && php artisan migrate --force || true && supervisord -c /etc/supervisord.conf"
