@@ -58,14 +58,20 @@ COPY . .
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
+RUN php artisan config:clear || true
+RUN php artisan cache:clear || true
+RUN php artisan view:clear || true
+
 RUN chown -R www-data:www-data /var/www/html/storage \
     /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage
+EXPOSE 8080
 
-CMD sed -i "s/Listen 80/Listen $PORT/g" /etc/apache2/ports.conf && \
-    sed -i "s/<VirtualHost \*:80>/<VirtualHost \*:$PORT>/g" /etc/apache2/sites-available/000-default.conf && \
-    a2dismod mpm_event mpm_worker || true && \
-    a2enmod mpm_prefork && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
-    apache2-foreground
+CMD sh -c ' \
+sed -i "s/APP_PORT/${PORT}/g" /etc/nginx/http.d/default.conf && \
+chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+php artisan optimize:clear || true; \
+php artisan migrate --force || true; \
+supervisord -c /etc/supervisord.conf \
+'
