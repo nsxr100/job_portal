@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  tester:
+    build:
+      context: .
+      dockerfile: docker/test/Dockerfile
+    volumes:
+      - ./:/var/www/html:cached
+    working_dir: /var/www/html
+    tty: true
+    environment:
+      COMPOSER_ALLOW_XDEBUG: 0
+    command: ["/usr/local/bin/run-tests.sh"]
