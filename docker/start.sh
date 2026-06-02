@@ -3,6 +3,15 @@ set -e
 
 echo "Starting Railway container with docker/start.sh."
 
+export DB_CONNECTION="${DB_CONNECTION:-mysql}"
+export DB_HOST="${DB_HOST:-${MYSQLHOST:-}}"
+export DB_PORT="${DB_PORT:-${MYSQLPORT:-3306}}"
+export DB_DATABASE="${DB_DATABASE:-${MYSQLDATABASE:-}}"
+export DB_USERNAME="${DB_USERNAME:-${MYSQLUSER:-}}"
+export DB_PASSWORD="${DB_PASSWORD:-${MYSQLPASSWORD:-}}"
+
+echo "Laravel database connection: ${DB_CONNECTION} at ${DB_HOST}:${DB_PORT}."
+
 php artisan optimize:clear
 
 cat > /etc/nginx/http.d/default.conf <<EOF
