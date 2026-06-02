@@ -82,4 +82,6 @@ EOF
 
 EXPOSE 8080
 
-CMD sh -c "php artisan optimize:clear || true && php artisan migrate --force || true && supervisord -c /etc/supervisord.conf"
+RUN chmod +x docker/start.sh
+
+CMD ["sh", "docker/start.sh"]
