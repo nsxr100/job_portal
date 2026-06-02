@@ -15,6 +15,8 @@ echo "Laravel database connection: ${DB_CONNECTION} at ${DB_HOST}:${DB_PORT}."
 CACHE_STORE=array php artisan optimize:clear
 rm -rf public/storage
 php artisan storage:link
+mkdir -p storage/app/public/resumes
+cp -n docker/seed-resumes/*.pdf storage/app/public/resumes/ 2>/dev/null || true
 echo "Resume files available in container:"
 ls -la storage/app/public/resumes || true
 
