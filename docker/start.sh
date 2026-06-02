@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+echo "Starting Railway container with docker/start.sh."
+
 php artisan optimize:clear
 
 cat > /etc/nginx/http.d/default.conf <<EOF
