@@ -44,20 +44,20 @@ EOF
 echo "Nginx will listen on port ${PORT:-8080}."
 
 (
-    if [ "${DB_CONNECTION}" = "mysql" ]; then
-        echo "Waiting for MySQL at ${DB_HOST}:${DB_PORT:-3306}..."
+    echo "Running database migrations..."
 
-        until mysqladmin ping \
-            --host="${DB_HOST}" \
-            --port="${DB_PORT:-3306}" \
-            --user="${DB_USERNAME}" \
-            --password="${DB_PASSWORD}" \
-            --silent; do
-            sleep 2
-        done
-    fi
+    attempt=1
+    until php artisan migrate --force; do
+        if [ "$attempt" -ge 30 ]; then
+            echo "Database migrations failed after ${attempt} attempts."
+            exit 1
+        fi
 
-    php artisan migrate --force
+        echo "Database migration attempt ${attempt} failed; retrying in 2 seconds..."
+        attempt=$((attempt + 1))
+        sleep 2
+    done
+
     php artisan config:cache
     php artisan route:cache
     php artisan view:cache
