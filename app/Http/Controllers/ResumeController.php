@@ -22,6 +22,12 @@ public function store(Request $request)
     // 2. Store the file (We confirmed this works!)
     $path = $request->file('resume')->store('resumes', 'public');
 
+    if ($path === false) {
+        return back()->withErrors([
+            'resume' => 'The resume could not be saved. Please try again.',
+        ]);
+    }
+
     // 3. Save to Database
     // Make sure your Resume model has 'path' and 'user_id' in $fillable
     \App\Models\Resume::updateOrCreate(

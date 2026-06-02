@@ -17,6 +17,8 @@ rm -rf public/storage
 php artisan storage:link
 mkdir -p storage/app/public/resumes
 cp -n docker/seed-resumes/*.pdf storage/app/public/resumes/ 2>/dev/null || true
+chown -R www-data:www-data storage bootstrap/cache
+chmod -R ug+rwX storage bootstrap/cache
 echo "Resume files available in container:"
 ls -la storage/app/public/resumes || true
 

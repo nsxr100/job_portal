@@ -24,6 +24,12 @@ class ApplicationController extends Controller
         // Save the file inside storage/app/public/resumes
         $path = $request->file('file')->store('resumes', 'public');
 
+        if ($path === false) {
+            return response()->json([
+                'error' => 'The resume could not be saved. Please try again.',
+            ], 500);
+        }
+
         $resume = Resume::updateOrCreate(
             ['user_id' => $request->user()->id],
             ['file_path' => $path]
