@@ -13,6 +13,7 @@ export DB_PASSWORD="${DB_PASSWORD:-${MYSQLPASSWORD:-}}"
 echo "Laravel database connection: ${DB_CONNECTION} at ${DB_HOST}:${DB_PORT}."
 
 CACHE_STORE=array php artisan optimize:clear
+php artisan storage:link
 
 cat > /etc/nginx/http.d/default.conf <<EOF
 server {
