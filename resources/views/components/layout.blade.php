@@ -13,16 +13,17 @@
             <a href="/" class="text-2xl font-bold text-blue-600">JobPortal</a>
 
             <div class="flex items-center space-x-6">
-                <a href="/" class="text-gray-600 hover:text-blue-600 font-medium">Browse Jobs</a>
+                <x-nav-link href="/" :active="request()->is('/')">Browse Jobs</x-nav-link>
 
                 @auth
                     {{-- Role-Based Navigation Logic --}}
                     @if(auth()->user()->role === 'employer')
-                        <a href="/jobs/create" class="text-gray-600 hover:text-blue-600 font-medium">Post a Job</a>
-                        <a href="/employer/dashboard" class="text-gray-600 hover:text-blue-600 font-medium">My Dashboard</a>
+                        <x-nav-link href="/jobs/create" :active="request()->is('jobs/create')">Post a Job</x-nav-link>
+                        <x-nav-link href="/employer/dashboard" :active="request()->is('employer/dashboard')">My Dashboard</x-nav-link>
+                        <x-nav-link href="/reports" :active="request()->is('reports')">Reports</x-nav-link>
                     @else
-                        <a href="/applications" class="text-gray-600 hover:text-blue-600 font-medium">My Applications</a>
-                        <a href="/resume" class="text-gray-600 hover:text-blue-600 font-medium">My Resume</a>
+                        <x-nav-link href="/applications" :active="request()->is('applications')">My Applications</x-nav-link>
+                        <x-nav-link href="/resume" :active="request()->is('resume')">My Resume</x-nav-link>
                     @endif
 
                     <div class="border-l pl-6 border-gray-300">
@@ -33,7 +34,7 @@
                         </form>
                     </div>
                 @else
-                    <a href="/login" class="text-gray-600 hover:text-blue-600 font-medium">Login</a>
+                    <x-nav-link href="/login" :active="request()->is('login')">Login</x-nav-link>
                     <a href="/register" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Sign Up</a>
                 @endauth
             </div>

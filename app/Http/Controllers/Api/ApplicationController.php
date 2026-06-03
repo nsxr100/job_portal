@@ -72,6 +72,31 @@ class ApplicationController extends Controller
         ], 201);
     }
 
+    // POST /api/applications (Applicant: Apply for a job)
+    public function store(Request $request)
+    {
+        $request->validate([
+            'job_id' => 'required|exists:portal_jobs,id',
+        ]);
+
+        return $this->apply($request, $request->job_id);
+    }
+
+    // GET /api/applications/{id}
+    public function show(Request $request, $id)
+    {
+        $application = Application::with(['job', 'applicant.resume'])->findOrFail($id);
+
+        $isApplicantOwner = $application->user_id === $request->user()->id;
+        $isEmployerOwner = $application->job?->user_id === $request->user()->id;
+
+        if (!$isApplicantOwner && !$isEmployerOwner && !$request->user()->is_admin) {
+            return response()->json(['error' => 'Unauthorized.'], 403);
+        }
+
+        return response()->json($application, 200);
+    }
+
     // GET /api/applications (Employer: View submissions for their jobs)
     public function index(Request $request)
     {
@@ -160,7 +185,12 @@ class ApplicationController extends Controller
         ->latest()
         ->get();
 
-        return view('employer.dashboard', compact('applications'));
+        $employerJobs = \App\Models\Job::where('user_id', auth()->id())
+            ->withCount('applications')
+            ->latest()
+            ->get();
+
+        return view('employer.dashboard', compact('applications', 'employerJobs'));
     }
 
     // Process Accept/Reject Status Change (Web View)

@@ -33,4 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/applications', [ApplicationController::class, 'index']);       // GET /api/applications (List submissions)
     Route::post('/applications', [ApplicationController::class, 'store']);     // POST /api/applications (Apply to a job)
     Route::get('/applications/{id}', [ApplicationController::class, 'show']);  // GET /api/applications/{id} (View submission details)
+    Route::patch('/applications/{id}/status', [ApplicationController::class, 'updateStatus']);
+    Route::post('/resumes', [ApplicationController::class, 'uploadResume']);
 });

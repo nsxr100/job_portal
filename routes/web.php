@@ -3,8 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\JobController;
+use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Api\ApplicationController; 
-use App\Models\Job;
 use App\Http\Controllers\ResumeController; 
 
 // === Public Routes ===
@@ -35,6 +35,15 @@ Route::middleware('auth')->group(function () {
     // Create jobs
     Route::get('/jobs/create', [JobController::class, 'create']);
     Route::post('/jobs', [JobController::class, 'store']);
+    Route::get('/jobs/{id}/edit', [JobController::class, 'edit'])->where('id', '[0-9]+');
+    Route::patch('/jobs/{id}', [JobController::class, 'update'])->where('id', '[0-9]+');
+    Route::delete('/jobs/{id}', [JobController::class, 'destroy'])->where('id', '[0-9]+');
+
+    // Reports, exports, and imports
+    Route::get('/reports', [ReportController::class, 'index']);
+    Route::get('/reports/export/{format}', [ReportController::class, 'export'])
+        ->whereIn('format', ['pdf', 'xlsx', 'csv', 'json']);
+    Route::post('/reports/import/jobs', [ReportController::class, 'importJobs']);
     
     // 2. FIXED: Moved Applications inside the 'auth' group!
     // Note: Pointing to 'indexWeb' based on the controller update we did earlier

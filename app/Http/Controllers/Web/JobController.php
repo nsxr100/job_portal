@@ -52,4 +52,45 @@ class JobController extends Controller
         
         return view('jobs.show', compact('job'));
     }
+
+    public function edit($id)
+    {
+        $job = Job::findOrFail($id);
+
+        abort_unless($job->user_id === Auth::id() || Auth::user()?->is_admin, 403);
+
+        return view('jobs.edit', compact('job'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $job = Job::findOrFail($id);
+
+        abort_unless($job->user_id === Auth::id() || Auth::user()?->is_admin, 403);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'company' => 'required|string|max:255',
+            'location' => 'required|string|max:255',
+            'salary' => 'required|string|max:255',
+            'type' => 'required|string',
+            'category' => 'nullable|string',
+            'description' => 'required|string|min:20',
+        ]);
+
+        $job->update($validated);
+
+        return redirect('/employer/dashboard')->with('success', 'Job updated successfully!');
+    }
+
+    public function destroy($id)
+    {
+        $job = Job::findOrFail($id);
+
+        abort_unless($job->user_id === Auth::id() || Auth::user()?->is_admin, 403);
+
+        $job->delete();
+
+        return redirect('/employer/dashboard')->with('success', 'Job deleted successfully!');
+    }
 }

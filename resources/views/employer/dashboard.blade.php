@@ -2,9 +2,53 @@
     <div class="max-w-6xl mx-auto mt-8">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-900">Employer Dashboard</h1>
-            <a href="/jobs/create" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-bold transition">
-                + Post a New Job
-            </a>
+            <div class="flex gap-3">
+                <a href="/reports" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 font-bold transition">
+                    Reports
+                </a>
+                <a href="/jobs/create" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-bold transition">
+                    + Post a New Job
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+            <div class="p-4 border-b">
+                <h2 class="text-xl font-bold text-gray-900">My Job Postings</h2>
+            </div>
+            @if(($employerJobs ?? collect())->isEmpty())
+                <div class="p-8 text-center text-gray-500">You have not posted a job yet.</div>
+            @else
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-800 text-white uppercase text-sm">
+                            <th class="p-4 border-b">Title</th>
+                            <th class="p-4 border-b">Company</th>
+                            <th class="p-4 border-b">Applications</th>
+                            <th class="p-4 border-b">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                        @foreach($employerJobs as $job)
+                            <tr class="hover:bg-gray-50 transition border-b">
+                                <td class="p-4">
+                                    <a href="/jobs/{{ $job->id }}" class="font-semibold text-blue-600 hover:underline">{{ $job->title }}</a>
+                                </td>
+                                <td class="p-4">{{ $job->company }}</td>
+                                <td class="p-4">{{ $job->applications_count }}</td>
+                                <td class="p-4 flex gap-2">
+                                    <a href="/jobs/{{ $job->id }}/edit" class="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold hover:bg-blue-700 transition">Edit</a>
+                                    <form action="/jobs/{{ $job->id }}" method="POST" onsubmit="return confirm('Delete this job posting?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-sm font-bold hover:bg-red-700 transition">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
         </div>
 
 
