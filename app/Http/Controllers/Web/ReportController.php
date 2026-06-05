@@ -68,33 +68,91 @@ class ReportController extends Controller
         ]);
 
         $handle = fopen($request->file('jobs_file')->getRealPath(), 'r');
-        $headers = array_map(fn ($header) => Str::snake(trim($header)), fgetcsv($handle) ?: []);
-        $created = 0;
+        if ($handle === false) {
+            return back()->withErrors([
+                'jobs_file' => 'The uploaded CSV file could not be opened. Please upload a valid job import CSV.',
+            ]);
+        }
+
+        $expectedHeaders = ['title', 'company', 'location', 'salary', 'type', 'category', 'description'];
+        $requiredFields = ['title', 'company', 'description'];
+        $allowedTypes = ['Full-Time', 'Part-Time', 'Contract', 'Remote'];
+
+        $headers = array_map(function ($header) {
+            $header = preg_replace('/^\xEF\xBB\xBF/', '', (string) $header);
+            return Str::snake(trim($header));
+        }, fgetcsv($handle) ?: []);
+
+        $missingHeaders = array_diff($expectedHeaders, $headers);
+        if ($headers === [] || $missingHeaders !== []) {
+            fclose($handle);
+
+            return back()->withErrors([
+                'jobs_file' => 'This is not a valid job import CSV. Required headers: ' . implode(', ', $expectedHeaders) . '. Missing: ' . implode(', ', $missingHeaders ?: $expectedHeaders) . '.',
+            ]);
+        }
+
+        $rows = [];
+        $errors = [];
+        $rowNumber = 1;
 
         while (($line = fgetcsv($handle)) !== false) {
-            $row = array_combine($headers, array_pad($line, count($headers), null));
-
-            if (!$row || empty($row['title']) || empty($row['company']) || empty($row['description'])) {
+            $rowNumber++;
+            if (count(array_filter($line, fn ($value) => trim((string) $value) !== '')) === 0) {
                 continue;
             }
 
-            Job::create([
-                'user_id' => Auth::id(),
-                'title' => $row['title'],
-                'company' => $row['company'],
-                'location' => $row['location'] ?? 'Not specified',
-                'salary' => $row['salary'] ?? 'Not specified',
-                'type' => $row['type'] ?? 'Full-Time',
-                'category' => $row['category'] ?? null,
-                'description' => $row['description'],
-            ]);
+            $values = array_slice(array_pad($line, count($headers), null), 0, count($headers));
+            $row = array_combine($headers, $values);
 
-            $created++;
+            if (!$row) {
+                $errors[] = "Row {$rowNumber} has invalid column data.";
+                continue;
+            }
+
+            $row = array_map(fn ($value) => trim((string) $value), $row);
+
+            foreach ($requiredFields as $field) {
+                if ($row[$field] === '') {
+                    $errors[] = "Row {$rowNumber} is missing {$field}.";
+                }
+            }
+
+            if (($row['type'] ?? '') !== '' && !in_array($row['type'], $allowedTypes, true)) {
+                $errors[] = "Row {$rowNumber} has invalid type. Use: " . implode(', ', $allowedTypes) . '.';
+            }
+
+            $rows[] = $row;
         }
 
         fclose($handle);
 
-        return back()->with('success', "{$created} job posting(s) imported successfully.");
+        if ($rows === []) {
+            return back()->withErrors([
+                'jobs_file' => 'The CSV headers are valid, but no job posting rows were found.',
+            ]);
+        }
+
+        if ($errors !== []) {
+            return back()->withErrors([
+                'jobs_file' => 'The CSV was not imported because it contains invalid job data. ' . implode(' ', array_slice($errors, 0, 4)),
+            ]);
+        }
+
+        foreach ($rows as $row) {
+            Job::create([
+                'user_id' => Auth::id(),
+                'title' => $row['title'],
+                'company' => $row['company'],
+                'location' => $row['location'] !== '' ? $row['location'] : 'Not specified',
+                'salary' => $row['salary'] !== '' ? $row['salary'] : 'Not specified',
+                'type' => $row['type'] !== '' ? $row['type'] : 'Full-Time',
+                'category' => $row['category'] !== '' ? $row['category'] : null,
+                'description' => $row['description'],
+            ]);
+        }
+
+        return back()->with('success', count($rows) . ' job posting(s) imported successfully.');
     }
 
     private function applicationReportData(): array
