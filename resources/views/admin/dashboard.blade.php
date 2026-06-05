@@ -130,12 +130,12 @@
                             <td class="p-3">{{ $job->type }}</td>
                             <td class="p-3">{{ $job->applications_count }}</td>
                             <td class="p-3">
-                                <div class="flex gap-2">
-                                    <a href="/jobs/{{ $job->id }}/edit" class="rounded bg-blue-600 px-3 py-2 font-bold text-white hover:bg-blue-700">Edit</a>
+                                <div class="flex flex-col gap-2">
+                                    <a href="/jobs/{{ $job->id }}/edit" class="rounded bg-blue-600 px-3 py-2 text-center font-bold text-white hover:bg-blue-700">Edit</a>
                                     <form action="/admin/jobs/{{ $job->id }}" method="POST" onsubmit="return confirm('Delete this job posting?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="rounded bg-red-600 px-3 py-2 font-bold text-white hover:bg-red-700">Delete</button>
+                                        <button type="submit" class="w-full rounded bg-red-600 px-3 py-2 font-bold text-white hover:bg-red-700">Delete</button>
                                     </form>
                                 </div>
                             </td>

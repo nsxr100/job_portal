@@ -12,7 +12,7 @@
                 @elseif(auth()->user()->role === 'employer')
                     {{-- Only Employers see the "Post a Job" action --}}
                     <a href="/jobs/create" class="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition shadow-lg">
-                        + Post a New Job
+                        Post a New Job
                     </a>
                 @else
                     {{-- Applicants see a personalized welcome --}}

@@ -7,7 +7,7 @@
                     Reports
                 </a>
                 <a href="/jobs/create" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-bold transition">
-                    + Post a New Job
+                    Post a New Job
                 </a>
             </div>
         </div>
