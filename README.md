@@ -1,174 +1,299 @@
+# Job Portal System
 
-Job Portal System
+The Job Portal System is a Laravel-based web application created to make job posting and job application management easier for applicants, employers, and administrators. Applicants can browse jobs, submit applications, and upload resumes. Employers can post jobs and review applicants. Administrators can manage users, jobs, applications, resumes, reports, and system records.
 
-Project Description
+This project was developed for educational purposes and demonstrates authentication, CRUD operations, database relationships, middleware protection, RESTful API endpoints, report generation, import/export features, file uploads, and Railway deployment.
 
-The Job Portal System is a web-based application developed using Laravel and MySQL. It allows employers to post job opportunities and manage applications, while applicants can browse available jobs, apply online, and upload resumes. The system implements authentication, CRUD operations, RESTful APIs, database relationships, middleware protection, and Blade templates to provide a secure and user-friendly job application platform.
+## Developers
 
-Developers
+* Raven Kristian Abarintos
+* Kyerbie Adam Bautista
+* Carl Justen Earl Sison
+* Mikko Catinguel
 
-Raven Kristian Abarintos 
+## Modules
 
-Kyerbie Adam Bautista
+* Authentication and Session Management
+* Applicant Registration and Login
+* Employer Registration and Login
+* Admin Dashboard
+* Job Posting Management
+* Job Application Management
+* Resume Upload and Management
+* Reports, Import, and Export
+* RESTful API
+* Railway Deployment
 
-Carl justen Earl Sison
+## System Roles
 
-Mikko catinguel
+### Applicant
 
-How the System Works
+Applicants can register, log in, browse available jobs, apply for jobs, upload resumes, and view their submitted applications.
 
-Employer Features
+### Employer
 
-Register and log in to the system.
+Employers can register, log in, create job postings, edit their own job postings, delete their own job postings, and manage applications submitted to their jobs.
 
-Create, update, view, and delete job postings.
+### Admin
 
-View applicants who applied for posted jobs.
+Admins have access to the admin dashboard. They can manage all user accounts, job postings, resumes, and applications. Admin users are roleless in the normal applicant/employer flow because they are system administrators.
 
-Manage job applications.
+## Main Features
 
-Applicant Features
+* Login and logout
+* Laravel session handling
+* Password hashing
+* Applicant, employer, and admin access
+* Create, read, update, and delete job postings
+* Apply to jobs
+* Resume upload and viewing
+* Admin control over accounts, jobs, resumes, and applications
+* Report generation
+* CSV job import
+* Export reports as PDF, XLSX, CSV, and JSON
+* RESTful API with GET, POST, PUT/PATCH, and DELETE requests
+* Middleware-protected routes
+* Laravel migrations, models, controllers, and Blade templates
+* Railway deployment with MySQL database
 
-Register and log in to the system.
+## Database Design
 
-Browse available job listings.
+The system uses MySQL and Laravel Eloquent ORM.
 
-Apply for jobs.
+Main tables:
 
-Upload and manage resumes.
+* `users`
+* `jobs`
+* `portal_jobs`
+* `applications`
+* `resumes`
+* `saved_jobs`
+* `personal_access_tokens`
 
-View submitted applications.
+Main relationships:
 
-System Components
+* One user can post many jobs.
+* One job can have many applications.
+* One applicant can submit many applications.
+* One applicant can upload and manage resumes.
+* One application belongs to one applicant and one job.
 
-Authentication using Laravel sessions and password hashing.
+Database design documents are available in:
 
-Middleware to protect authorized routes.
+* `docs/database-design.md`
+* `docs/erd-diagram.mmd`
 
-CRUD operations for jobs, applications, and resumes.
+## Installation
 
-RESTful API endpoints for job management.
+You can install the project locally by cloning the repository and running the Laravel setup commands.
 
-Database relationships:
+### GitHub Clone
 
-One User can post many Jobs.
+```bash
+git clone https://github.com/nsxr100/job_portal.git
+cd job_portal
+```
 
-One Job can have many Applications.
+### Install Dependencies
 
-One Applicant can submit many Applications.
-
-One Applicant can upload and manage Resumes.
-
-Installation / Setup Instructions
-
-Prerequisites
-
-MySQL
-
-Laravel Framework
-
-Installation Steps
-
-Clone the repository
-
-Navigate to the project directory:
-
-cd job-portal-system
-
-Install PHP dependencies:
-
+```bash
 composer install
-
-Install frontend dependencies:
-
 npm install
+```
 
-Create environment file:
+### Environment Setup
 
+Copy the example environment file:
+
+```bash
 cp .env.example .env
+```
 
-Generate application key:
+Generate the Laravel application key:
 
+```bash
 php artisan key:generate
+```
 
-Configure database settings in the .env file.
+Configure the database in `.env`:
 
-Run database migrations:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=job_portal
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
+Run migrations:
+
+```bash
 php artisan migrate
+```
 
-Start the development server:
+Start the local development server:
 
+```bash
 php artisan serve
+```
 
-Open your browser and visit:
+Open the system in your browser:
 
+```text
 http://127.0.0.1:8000
+```
 
-REST API Endpoints
+## Requirements
 
-Jobs
+* PHP 8.4 or higher
+* Composer
+* Node.js and npm
+* MySQL or MariaDB
+* Laravel 11
+* Laravel Sanctum
+* XAMPP, Laragon, or another local PHP/MySQL environment for local testing
 
-GET    /api/jobs
-POST   /api/jobs
-PUT    /api/jobs/{id}
-PATCH  /api/jobs/{id}
-DELETE /api/jobs/{id}
+## Demo Credentials
 
-Applications
+Use these sample accounts for testing the deployed or local system when they exist in the database.
 
-GET    /api/applications
-POST   /api/applications
-DELETE /api/applications/{id}
+| Role | Email | Password |
+| --- | --- | --- |
+| Applicant | `user@example.com` | `user123` |
+| Employer | `employer@example.com` | `employer123` |
 
-Technologies Used
+Admin credentials should be provided privately during presentation or created directly through the database/admin setup. Do not commit real production admin passwords to GitHub.
 
-PHP
+## Web Routes
 
-Laravel Framework
+| Feature | URL |
+| --- | --- |
+| Home / Browse Jobs | `/` |
+| Login | `/login` |
+| Register | `/register` |
+| Employer Dashboard | `/employer/dashboard` |
+| Applicant Applications | `/applications` |
+| Resume Upload | `/resume` |
+| Reports | `/reports` |
+| Admin Dashboard | `/admin/dashboard` |
 
-MySQL Database
+## RESTful API Endpoints
 
-Blade Templates
+### Authentication
 
-Bootstrap / CSS
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/api/register` | Register a user |
+| POST | `/api/login` | Log in and receive API token |
+| GET | `/api/user` | Get current authenticated user |
+| POST | `/api/logout` | Revoke API token |
 
-RESTful API
+### Jobs
 
-Git & GitHub
-https://github.com/nsxr100/job_portal
-Railway Deployment
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/jobs` | List jobs |
+| GET | `/api/jobs/{id}` | View one job |
+| POST | `/api/jobs` | Create job |
+| PUT | `/api/jobs/{id}` | Update job |
+| DELETE | `/api/jobs/{id}` | Delete job |
 
- sample account
-Applicant account:
-user@example.com
-user123
-Employer account
-employer@example.com
-employer123
+### Applications and Resumes
 
-Backend Deployment (Railway):
-jobportal-production-cf19.up.railway.app
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/api/applications` | List applications |
+| POST | `/api/applications` | Submit application |
+| GET | `/api/applications/{id}` | View application |
+| PATCH | `/api/applications/{id}/status` | Update application status |
+| POST | `/api/resumes` | Upload resume |
 
+For protected API routes, send the token using:
 
-Project Requirements Implemented
+```text
+Authorization: Bearer YOUR_TOKEN_HERE
+Accept: application/json
+```
 
-✔ Authentication (Login, Logout, Sessions, Password Hashing)
+## Railway Deployment
 
-✔ CRUD Operations
+The project is deployed using Railway.
 
-✔ RESTful API
+Deployment link:
 
-✔ Controllers, Models, and Migrations
+```text
+https://jobportal-production-cf19.up.railway.app
+```
 
-✔ Blade Templates
+The deployed system uses a Railway MySQL service. The Laravel application service gets its database settings from Railway variable references:
 
-✔ Middleware Protection
+```env
+DB_CONNECTION=mysql
+DB_HOST=${{MySQL-BQTX.MYSQLHOST}}
+DB_PORT=${{MySQL-BQTX.MYSQLPORT}}
+DB_DATABASE=${{MySQL-BQTX.MYSQLDATABASE}}
+DB_USERNAME=${{MySQL-BQTX.MYSQLUSER}}
+DB_PASSWORD=${{MySQL-BQTX.MYSQLPASSWORD}}
+```
 
-✔ Route Groups
+The actual values are generated by Railway inside the MySQL service Variables tab. They should not be manually typed into GitHub.
 
-✔ Database Relationships
+## Docker
 
-✔ GitHub Version Control
+Docker is used for Railway deployment. The Dockerfile builds the Laravel app with PHP, Composer dependencies, Nginx, PHP-FPM, and required PHP extensions. The startup script prepares Laravel caches, creates the public storage link, runs migrations, and starts the web server.
 
-✔ Railway Deployment
+Main deployment files:
+
+* `Dockerfile`
+* `docker/start.sh`
+* `nixpacks.toml`
+
+## Reports and Import/Export
+
+The reports module supports:
+
+* PDF export
+* XLSX export
+* CSV export
+* JSON export
+* CSV import for job postings
+
+The job import file must contain the expected job posting columns. If the uploaded CSV does not match the required structure, the system rejects it and shows an error message instead of importing incorrect data.
+
+## What's Included?
+
+* Laravel 11 - PHP web framework used for routing, controllers, models, middleware, and Blade views.
+* Laravel Sanctum - Token authentication for the RESTful API.
+* MySQL - Database used for users, jobs, applications, resumes, and tokens.
+* Blade Templates - Server-side views used for the web interface.
+* Eloquent ORM - Laravel database model system used for relationships.
+* Vite and Tailwind CSS - Frontend asset tooling and styling support.
+* Docker - Container setup for Railway deployment.
+* Railway - Online hosting platform used for the deployed system and database.
+* Postman - Used for testing API requests.
+
+## Project Requirements Implemented
+
+* Authentication system
+* Login and logout
+* Session handling
+* Password hashing
+* CRUD operations
+* Laravel migrations
+* Laravel Eloquent ORM
+* Database relationships
+* RESTful API
+* Master layout and Blade components
+* Middleware protection
+* Admin dashboard
+* Auto-generated reports
+* Import and export features
+* File uploads
+* GitHub repository
+* Railway deployment
+
+## License
+
+This project is for educational use.
+
