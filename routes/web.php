@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Web\AdminController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\JobController;
 use App\Http\Controllers\Web\ReportController;
@@ -55,8 +56,13 @@ Route::middleware('auth')->group(function () {
     
     // Explicit Admin Route Protection Group
     Route::middleware(\App\Http\Middleware\EnsureUserIsAdmin::class)->prefix('admin')->group(function () {
-        Route::get('/dashboard', function () {
-            return "Welcome Admin to the protected route area.";
-        });
+        Route::get('/dashboard', [AdminController::class, 'dashboard']);
+        Route::post('/users', [AdminController::class, 'storeUser']);
+        Route::patch('/users/{user}', [AdminController::class, 'updateUser']);
+        Route::delete('/users/{user}', [AdminController::class, 'destroyUser']);
+        Route::delete('/jobs/{job}', [AdminController::class, 'destroyJob']);
+        Route::patch('/applications/{application}', [AdminController::class, 'updateApplication']);
+        Route::delete('/applications/{application}', [AdminController::class, 'destroyApplication']);
+        Route::delete('/resumes/{resume}', [AdminController::class, 'destroyResume']);
     });
 });

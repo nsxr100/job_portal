@@ -16,6 +16,10 @@
                 <x-nav-link href="/" :active="request()->is('/')">Browse Jobs</x-nav-link>
 
                 @auth
+                    @if(auth()->user()->is_admin)
+                        <x-nav-link href="/admin/dashboard" :active="request()->is('admin/*')">Admin</x-nav-link>
+                    @endif
+
                     {{-- Role-Based Navigation Logic --}}
                     @if(auth()->user()->role === 'employer')
                         <x-nav-link href="/jobs/create" :active="request()->is('jobs/create')">Post a Job</x-nav-link>
