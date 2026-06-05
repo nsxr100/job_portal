@@ -64,7 +64,11 @@ class AuthController extends Controller
             // Protect against session fixation attacks
             $request->session()->regenerate();
 
-            // Optional: Redirect employers to their dashboard, applicants to home
+            // Optional: Redirect by account type
+            if (Auth::user()->is_admin) {
+                return redirect()->intended('/admin/dashboard')->with('success', 'Welcome back, admin!');
+            }
+
             if (Auth::user()->role === 'employer') {
                 return redirect()->intended('/employer/dashboard')->with('success', 'Welcome back!');
             }

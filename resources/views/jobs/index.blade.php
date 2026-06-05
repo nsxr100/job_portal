@@ -5,7 +5,11 @@
 
         <div class="mt-6">
             @auth
-                @if(auth()->user()->role === 'employer')
+                @if(auth()->user()->is_admin)
+                    <a href="/admin/dashboard" class="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition shadow-lg">
+                        Open Admin Dashboard
+                    </a>
+                @elseif(auth()->user()->role === 'employer')
                     {{-- Only Employers see the "Post a Job" action --}}
                     <a href="/jobs/create" class="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition shadow-lg">
                         + Post a New Job

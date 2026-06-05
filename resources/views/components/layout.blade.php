@@ -18,10 +18,7 @@
                 @auth
                     @if(auth()->user()->is_admin)
                         <x-nav-link href="/admin/dashboard" :active="request()->is('admin/*')">Admin</x-nav-link>
-                    @endif
-
-                    {{-- Role-Based Navigation Logic --}}
-                    @if(auth()->user()->role === 'employer')
+                    @elseif(auth()->user()->role === 'employer')
                         <x-nav-link href="/jobs/create" :active="request()->is('jobs/create')">Post a Job</x-nav-link>
                         <x-nav-link href="/employer/dashboard" :active="request()->is('employer/dashboard')">My Dashboard</x-nav-link>
                         <x-nav-link href="/reports" :active="request()->is('reports')">Reports</x-nav-link>

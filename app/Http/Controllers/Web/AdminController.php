@@ -33,16 +33,18 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:applicant,employer',
+            'role' => 'nullable|in:applicant,employer',
             'is_admin' => 'nullable|boolean',
         ]);
+
+        $isAdmin = $request->boolean('is_admin');
 
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-            'is_admin' => $request->boolean('is_admin'),
+            'role' => $isAdmin ? null : ($validated['role'] ?? 'applicant'),
+            'is_admin' => $isAdmin,
         ]);
 
         return back()->with('success', 'User account created successfully.');
@@ -53,15 +55,17 @@ class AdminController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            'role' => 'required|in:applicant,employer',
+            'role' => 'nullable|in:applicant,employer',
             'password' => 'nullable|string|min:8',
             'is_admin' => 'nullable|boolean',
         ]);
 
+        $isAdmin = $request->boolean('is_admin');
+
         $user->name = $validated['name'];
         $user->email = $validated['email'];
-        $user->role = $validated['role'];
-        $user->is_admin = $request->boolean('is_admin');
+        $user->role = $isAdmin ? null : ($validated['role'] ?? 'applicant');
+        $user->is_admin = $isAdmin;
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);

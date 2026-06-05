@@ -31,7 +31,7 @@
             <input type="text" name="name" placeholder="Name" class="rounded border border-gray-300 p-3" required>
             <input type="email" name="email" placeholder="Email" class="rounded border border-gray-300 p-3" required>
             <input type="password" name="password" placeholder="Password" class="rounded border border-gray-300 p-3" required>
-            <select name="role" class="rounded border border-gray-300 p-3" required>
+            <select name="role" class="rounded border border-gray-300 p-3">
                 <option value="applicant">Applicant</option>
                 <option value="employer">Employer</option>
             </select>
@@ -41,6 +41,7 @@
             </label>
             <button type="submit" class="rounded bg-blue-600 px-4 py-3 font-bold text-white hover:bg-blue-700">Create</button>
         </form>
+        <p class="mt-3 text-sm text-gray-500">If Admin is checked, the account is saved without an applicant/employer role.</p>
     </section>
 
     <section class="mb-8 overflow-hidden rounded-lg bg-white shadow">
@@ -67,7 +68,7 @@
                                 <p class="font-bold text-gray-900">{{ $user->name }}</p>
                                 <p class="text-xs text-gray-500">{{ $user->email }}</p>
                             </td>
-                            <td class="p-3">{{ ucfirst($user->role ?? 'applicant') }}</td>
+                            <td class="p-3">{{ $user->is_admin ? 'Admin only' : ucfirst($user->role ?? 'applicant') }}</td>
                             <td class="p-3">{{ $user->is_admin ? 'Yes' : 'No' }}</td>
                             <td class="p-3">{{ $user->jobs_count }}</td>
                             <td class="p-3">{{ $user->applications_count }}</td>

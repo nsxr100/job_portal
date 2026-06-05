@@ -26,12 +26,24 @@
                 </div>
 
                 @auth
-                    <form action="/jobs/{{ $job->id }}/apply" method="POST">
-                        @csrf
-                        <button type="submit" class="bg-blue-600 text-white font-bold py-3 px-6 rounded hover:bg-blue-700 shadow-md transition">
-                            Apply Now
-                        </button>
-                    </form>
+                    @if(auth()->user()->is_admin)
+                        <a href="/jobs/{{ $job->id }}/edit" class="bg-blue-600 text-white font-bold py-3 px-6 rounded hover:bg-blue-700 shadow-md transition">
+                            Edit Job
+                        </a>
+                    @elseif(auth()->user()->role === 'employer')
+                        @if($job->user_id === auth()->id())
+                            <a href="/jobs/{{ $job->id }}/edit" class="bg-blue-600 text-white font-bold py-3 px-6 rounded hover:bg-blue-700 shadow-md transition">
+                                Edit Job
+                            </a>
+                        @endif
+                    @else
+                        <form action="/jobs/{{ $job->id }}/apply" method="POST">
+                            @csrf
+                            <button type="submit" class="bg-blue-600 text-white font-bold py-3 px-6 rounded hover:bg-blue-700 shadow-md transition">
+                                Apply Now
+                            </button>
+                        </form>
+                    @endif
                 @else
                     <a href="/login" class="bg-gray-800 text-white font-bold py-3 px-6 rounded hover:bg-gray-900 shadow-md transition">
                         Login to Apply

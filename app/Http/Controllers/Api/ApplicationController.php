@@ -151,6 +151,10 @@ class ApplicationController extends Controller
     // Process Apply Button (Web View)
     public function applyWeb(Request $request, $jobId)
     {
+        if (auth()->user()?->is_admin || auth()->user()?->role !== 'applicant') {
+            return back()->with('error', 'Only applicants can apply for jobs.');
+        }
+
         $job = Job::findOrFail($jobId);
         $userId = auth()->id(); 
 
