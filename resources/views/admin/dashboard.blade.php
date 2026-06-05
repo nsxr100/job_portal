@@ -58,7 +58,7 @@
                         <th class="p-3">Jobs</th>
                         <th class="p-3">Applications</th>
                         <th class="p-3">Update Account</th>
-                        <th class="p-3">Delete</th>
+                        <th class="p-3">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -73,7 +73,7 @@
                             <td class="p-3">{{ $user->jobs_count }}</td>
                             <td class="p-3">{{ $user->applications_count }}</td>
                             <td class="p-3">
-                                <form action="/admin/users/{{ $user->id }}" method="POST" class="grid gap-2 md:grid-cols-5">
+                                <form id="update-user-{{ $user->id }}" action="/admin/users/{{ $user->id }}" method="POST" class="grid gap-2 md:grid-cols-5">
                                     @csrf
                                     @method('PATCH')
                                     <input type="text" name="name" value="{{ $user->name }}" class="rounded border border-gray-300 p-2">
@@ -87,15 +87,17 @@
                                         <input type="checkbox" name="is_admin" value="1" @checked($user->is_admin)>
                                         <span>Admin</span>
                                     </label>
-                                    <button type="submit" class="rounded bg-blue-600 px-3 py-2 font-bold text-white hover:bg-blue-700 md:col-span-5">Save Account</button>
                                 </form>
                             </td>
                             <td class="p-3">
-                                <form action="/admin/users/{{ $user->id }}" method="POST" onsubmit="return confirm('Delete this user account and related records?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="rounded bg-red-600 px-3 py-2 font-bold text-white hover:bg-red-700" @disabled($user->id === auth()->id())>Delete</button>
-                                </form>
+                                <div class="flex flex-col gap-2">
+                                    <form action="/admin/users/{{ $user->id }}" method="POST" onsubmit="return confirm('Delete this user account and related records?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="w-full rounded bg-red-600 px-3 py-2 font-bold text-white hover:bg-red-700" @disabled($user->id === auth()->id())>Delete</button>
+                                    </form>
+                                    <button type="submit" form="update-user-{{ $user->id }}" class="w-full rounded bg-blue-600 px-3 py-2 font-bold text-white hover:bg-blue-700">Save</button>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
